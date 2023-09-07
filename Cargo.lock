@@ -736,6 +736,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "prismaviz"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "prettytable-rs",
+ "psl-core",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -989,15 +998,6 @@ dependencies = [
  "diagnostics",
  "pest",
  "pest_derive",
-]
-
-[[package]]
-name = "schema-visualise"
-version = "0.1.0"
-dependencies = [
- "clap",
- "prettytable-rs",
- "psl-core",
 ]
 
 [[package]]
