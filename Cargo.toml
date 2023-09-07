@@ -1,0 +1,18 @@
+[workspace]
+members = [
+    "schema-visualise",
+    "psl-core",
+    "schema-ast",
+    "prisma-value",
+    "parser-database",
+    "diagnostics",
+    "psl",
+    "builtin-connectors",
+]
+
+[workspace.dependencies]
+serde_json = { version = "1", features = ["float_roundtrip", "preserve_order"] }
+serde = { version = "1", features = ["derive"] }
+indoc = "2.0.1"
+uuid = { version = "0.7", features = ["v4", "serde"] }
+connection-string = "0.2.0"

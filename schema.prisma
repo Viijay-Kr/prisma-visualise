@@ -1,0 +1,42 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
+model Post {
+    id         Int                 @id @default(autoincrement())
+    title      String
+    categories CategoriesOnPosts[]
+}
+
+model Category {
+    id    Int                 @id @default(autoincrement())
+    name  String
+    posts CategoriesOnPosts[]
+}
+
+model CategoriesOnPosts {
+    post       Post     @relation(fields: [postId], references: [id])
+    postId     Int // relation scalar field (used in the `@relation` attribute above)
+    category   Category @relation(fields: [categoryId], references: [id])
+    categoryId Int // relation scalar field (used in the `@relation` attribute above)
+    assignedAt DateTime @default(now())
+    assignedBy String
+
+    @@id([postId, categoryId])
+    @@index([postId])
+    @@index([categoryId])
+}
+
+model Test {
+    relationId Int
+    categoryId Int
+    name       String @db.VarChar(200)
+
+    @@unique([relationId, categoryId])
+}
