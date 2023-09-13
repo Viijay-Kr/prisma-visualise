@@ -1,6 +1,7 @@
 [package]
 name = "prismaviz"
 version = "0.1.0"
+description = "A simple command line utility to visualise your prisma schema in your favorite terminal"
 edition = "2021"
 
 
