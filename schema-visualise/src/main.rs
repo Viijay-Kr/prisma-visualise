@@ -8,7 +8,7 @@ struct Args {
     file: Option<String>,
 }
 
-use prismaviz::parse_schema;
+use prismaviz::SchemaVisualiser;
 
 fn main() {
     let args = Args::parse();
@@ -17,7 +17,9 @@ fn main() {
             panic!("Err!!!You forgot to pass a path to a file");
         }
         Some(v) => {
-            parse_schema(&v);
+            let contents = std::fs::read_to_string(&v).unwrap();
+            let visualiser = SchemaVisualiser::new(contents);
+            visualiser.print_as_table();
         }
     }
 }

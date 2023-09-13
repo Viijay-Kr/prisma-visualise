@@ -9,6 +9,7 @@ members = [
     "psl",
     "builtin-connectors",
 ]
+resolver = "2"
 
 
 [workspace.dependencies]
