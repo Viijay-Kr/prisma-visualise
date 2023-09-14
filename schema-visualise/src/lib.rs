@@ -13,19 +13,38 @@ use psl_core::{
 
 use crate::{attributes::ModelAttributes, constraints::Contraints, relations::RelationShips};
 
+pub struct PrismaVizModelField {
+    pub attributes: ModelAttributes,
+    pub relation_ships: RelationShips,
+    pub constraints: Contraints,
+    pub name: String,
+    pub data_type: String,
+    pub is_index: String,
+}
+impl PrismaVizModelField {
+    fn new(name: String, data_type: String, is_index: &str) -> PrismaVizModelField {
+        PrismaVizModelField {
+            attributes: ModelAttributes { values: vec![] },
+            relation_ships: RelationShips { relations: vec![] },
+            constraints: Contraints {
+                constraints: vec![],
+            },
+            name,
+            data_type,
+            is_index: is_index.to_string(),
+        }
+    }
+}
 pub struct PrismaVizModel {
     pub name: String,
-    pub attributes: Vec<ModelAttributes>,
-    pub relation_ships: Vec<RelationShips>,
-    pub constraints: Vec<Contraints>,
+    pub fields: Vec<PrismaVizModelField>,
 }
+
 impl PrismaVizModel {
     pub fn new(name: String) -> PrismaVizModel {
         PrismaVizModel {
-            name: name,
-            attributes: vec![],
-            relation_ships: vec![],
-            constraints: vec![],
+            name,
+            fields: vec![],
         }
     }
 }
@@ -34,6 +53,7 @@ pub struct SchemaVisualiser {
     pub schema: String,
     pub models: Vec<PrismaVizModel>,
 }
+
 impl SchemaVisualiser {
     pub fn new(contents: String) -> SchemaVisualiser {
         SchemaVisualiser {
@@ -41,7 +61,10 @@ impl SchemaVisualiser {
             models: vec![],
         }
     }
-    pub fn print_as_table(&self) {
+    pub fn get_models(self) {
+        self.models;
+    }
+    pub fn parse(&mut self) {
         let mut diagnostics = Diagnostics::default();
         let result: SchemaAst = schema_ast::parse_schema(self.schema.as_str(), &mut diagnostics);
         let model_fields = result
@@ -56,24 +79,11 @@ impl SchemaVisualiser {
                     m.attributes.clone(),
                 )
             });
-
         model_fields.for_each(|(model, fields, attributes)| {
-            println!("Model {}", model);
             let mut prisma_viz_model = PrismaVizModel::new(model);
 
-            let mut table: Table = Table::new();
-            table.add_row(row![
-                "Name",
-                "Type",
-                "Attributes_Constraints",
-                "Relation_Fields",
-                "Relation_References",
-                "Index",
-            ]);
             let mut model_attributes = ModelAttributes::new();
             model_attributes.populate(&attributes);
-            prisma_viz_model.attributes.push(model_attributes.clone());
-
             fields.for_each(|(_, field)| {
                 let model_attributes = model_attributes.to_owned();
                 let field_type = match &field.field_type {
@@ -86,29 +96,54 @@ impl SchemaVisualiser {
 
                 let mut constraints = Contraints::new();
                 constraints.populate(&field.attributes);
-                let mut constraint_strings = constraints.to_string();
                 let mut relationships = RelationShips::new();
                 relationships.populate(&field.attributes);
                 let is_index = model_attributes.is_index(field.name());
+
+                let mut prisma_vis_model_field =
+                    PrismaVizModelField::new(field.name().to_string(), field_type, is_index);
+                prisma_vis_model_field.relation_ships = relationships;
+                prisma_vis_model_field.constraints = constraints;
+                prisma_vis_model_field.attributes = model_attributes;
+                prisma_viz_model.fields.push(prisma_vis_model_field);
+            });
+
+            self.models.push(prisma_viz_model);
+        });
+    }
+    pub fn print_as_table(&mut self) {
+        self.parse();
+        self.models.iter().for_each(|model| {
+            println!("Model {}", model.name);
+            let mut table: Table = Table::new();
+            table.add_row(row![
+                "Name",
+                "Type",
+                "Attributes_Constraints",
+                "Relation_Fields",
+                "Relation_References",
+                "Index",
+            ]);
+
+            model.fields.iter().for_each(|field| {
+                let mut constraint_strings = field.constraints.to_string();
                 constraint_strings = format!(
                     "{}\n{}",
                     constraint_strings,
-                    model_attributes.constraint_strings(field.name())
+                    field.attributes.constraint_strings(&field.name)
                 );
                 table.add_row(row![
-                    field.name(),
-                    field_type,
+                    field.name,
+                    field.data_type,
                     constraint_strings,
-                    relationships.fields(),
-                    relationships.references(),
-                    is_index,
+                    field.relation_ships.fields(),
+                    field.relation_ships.references(),
+                    field.is_index,
                 ]);
-                prisma_viz_model.relation_ships.push(relationships);
-                prisma_viz_model.constraints.push(constraints);
             });
 
             table.printstd();
             println!("");
-        });
+        })
     }
 }

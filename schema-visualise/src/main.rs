@@ -18,7 +18,7 @@ fn main() {
         }
         Some(v) => {
             let contents = std::fs::read_to_string(&v).unwrap();
-            let visualiser = SchemaVisualiser::new(contents);
+            let mut visualiser = SchemaVisualiser::new(contents);
             visualiser.print_as_table();
         }
     }
