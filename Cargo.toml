@@ -8,6 +8,7 @@ members = [
     "diagnostics",
     "psl",
     "builtin-connectors",
+    "http-api",
 ]
 resolver = "2"
 

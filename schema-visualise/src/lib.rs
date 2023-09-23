@@ -2,6 +2,7 @@ mod attributes;
 mod constraints;
 mod relations;
 
+pub use crate::{attributes::ModelAttributes, constraints::Contraints, relations::RelationShips};
 use prettytable::row;
 use prettytable::Table;
 use psl_core::schema_ast::ast::FieldType;
@@ -11,8 +12,6 @@ use psl_core::{
     schema_ast::{self, ast::SchemaAst},
 };
 
-use crate::{attributes::ModelAttributes, constraints::Contraints, relations::RelationShips};
-
 pub struct PrismaVizModelField {
     pub attributes: ModelAttributes,
     pub relation_ships: RelationShips,
@@ -21,6 +20,7 @@ pub struct PrismaVizModelField {
     pub data_type: String,
     pub is_index: String,
 }
+
 impl PrismaVizModelField {
     fn new(name: String, data_type: String, is_index: &str) -> PrismaVizModelField {
         PrismaVizModelField {
@@ -61,8 +61,8 @@ impl SchemaVisualiser {
             models: vec![],
         }
     }
-    pub fn get_models(self) {
-        self.models;
+    pub fn get_models(self) -> Vec<PrismaVizModel> {
+        self.models
     }
     pub fn parse(&mut self) {
         let mut diagnostics = Diagnostics::default();
