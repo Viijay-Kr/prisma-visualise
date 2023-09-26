@@ -1,11 +1,13 @@
 #[macro_use]
 extern crate rocket;
-use std::env;
-
 use prismaviz::SchemaVisualiser;
 use rocket::form::Form;
 use rocket::fs::TempFile;
+use rocket::http::Method;
 use rocket::serde::{json::Json, Deserialize, Serialize};
+use rocket_cors::{AllowedHeaders, AllowedOrigins};
+use std::env;
+
 #[get("/")]
 fn index() -> &'static str {
     "Schema Visualiser"
@@ -76,5 +78,21 @@ async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<VisualiseOutp
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, visualise])
+    let allowed_origins = AllowedOrigins::some_exact(&["http://localhost:5173"]);
+    let cors = rocket_cors::CorsOptions {
+        allowed_origins,
+        allowed_methods: vec![Method::Get, Method::Post, Method::Put]
+            .into_iter()
+            .map(From::from)
+            .collect(),
+        allowed_headers: AllowedHeaders::some(&["Authorization", "Accept"]),
+        allow_credentials: true,
+        ..Default::default()
+    }
+    .to_cors()
+    .expect("Cors setup failed");
+
+    rocket::build()
+        .mount("/", routes![index, visualise])
+        .attach(cors)
 }
