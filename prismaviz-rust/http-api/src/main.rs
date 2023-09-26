@@ -4,9 +4,8 @@ use prismaviz::SchemaVisualiser;
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::http::Method;
-use rocket::serde::{json::Json, Deserialize, Serialize};
+use rocket::serde::{json::Json, Serialize};
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
-use std::env;
 
 #[get("/")]
 fn index() -> &'static str {
