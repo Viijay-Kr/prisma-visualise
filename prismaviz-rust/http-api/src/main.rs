@@ -46,6 +46,7 @@ struct VisualiseOutput {
 #[post("/api/v1/visualise", data = "<input>")]
 async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<VisualiseOutput>> {
     let temp_path = std::env::temp_dir().join("temp.prisma");
+    println!("Temp path is {}", temp_path.to_string_lossy());
     input
         .into_inner()
         .schema
