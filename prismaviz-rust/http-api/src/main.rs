@@ -77,7 +77,7 @@ async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<VisualiseOutp
 
 #[launch]
 fn rocket() -> _ {
-    let allowed_origins = AllowedOrigins::some_exact(&["http://localhost:5173"]);
+    let allowed_origins = AllowedOrigins::all();
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
         allowed_methods: vec![Method::Get, Method::Post, Method::Put]
@@ -90,7 +90,6 @@ fn rocket() -> _ {
     }
     .to_cors()
     .expect("Cors setup failed");
-
     rocket::build()
         .mount("/", routes![index, visualise])
         .attach(cors)
