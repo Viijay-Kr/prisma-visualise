@@ -1,22 +1,21 @@
 #[macro_use]
 extern crate rocket;
-use std::net::{IpAddr, Ipv4Addr};
-
 use prismaviz::SchemaVisualiser;
 use rocket::config::Config;
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::http::Method;
 use rocket::serde::{json::Json, Serialize};
+use rocket::Request;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
-
+use std::net::{IpAddr, Ipv4Addr};
+use uuid::Uuid;
 #[get("/")]
 fn index() -> &'static str {
     "Schema Visualiser"
 }
 
 #[derive(Debug, FromForm)]
-#[warn(renamed_and_removed_lints)]
 struct VisualiseInput<'r> {
     schema: TempFile<'r>,
 }
@@ -43,10 +42,15 @@ struct VisualiseOutput {
     result: Vec<Model>,
 }
 
+#[catch(400)]
+fn bad_request(req: &Request) {
+    format!("Something wrong with the request {}", req.uri());
+}
 #[post("/api/v1/visualise", data = "<input>")]
 async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<VisualiseOutput>> {
-    let temp_path = Ok(std::env::temp_dir().join("temp.prisma"));
-    match temp_path {
+    let uuid = Uuid::new_v4();
+    let temp_file_path = Ok(std::env::temp_dir().join(uuid.hyphenated().to_string() + ".prisma"));
+    match temp_file_path {
         Ok(v) => {
             input
                 .into_inner()
@@ -76,11 +80,11 @@ async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<VisualiseOutp
                         .collect::<Vec<Field>>(),
                 })
                 .collect::<Vec<Model>>();
-
+            std::fs::remove_file::<_>(v);
             Some(Json(VisualiseOutput { result }))
         }
         Err(e) => {
-            println!("Error occured during reading temp directory ");
+            format!("failed to read temp path");
             e
         }
     }
@@ -106,5 +110,6 @@ fn rocket() -> _ {
     config.address = IpAddr::V4(ip);
     rocket::custom(config)
         .mount("/", routes![index, visualise])
+        .register("/api/v1/visualise", catchers![bad_request])
         .attach(cors)
 }

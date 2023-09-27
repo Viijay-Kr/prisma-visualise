@@ -6,8 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+uuid = { version = "1.4.1", features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+] }
 rocket = { version = "=0.5.0-rc.3", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
 prismaviz = { path = "../schema-visualise", version = "0.1.0" }
-
-

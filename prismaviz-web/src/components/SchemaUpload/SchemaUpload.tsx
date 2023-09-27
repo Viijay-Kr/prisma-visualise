@@ -11,14 +11,11 @@ export function SchemaUpload(props: Partial<DropzoneProps>) {
     let headersList = {
       Accept: "*/*",
     };
-    let response = await fetch(
-      "https://p8000-zc339df42-zc377cc33-gtw.z8daea048.qovery.fr/api/v1/visualise",
-      {
-        method: "POST",
-        body: bodyContent,
-        headers: headersList,
-      }
-    );
+    let response = await fetch("http://localhost:8000/api/v1/visualise", {
+      method: "POST",
+      body: bodyContent,
+      headers: headersList,
+    });
     console.log(await response.json());
   };
   return (
