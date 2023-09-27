@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate rocket;
+use std::net::{IpAddr, Ipv4Addr};
+
 use prismaviz::SchemaVisualiser;
+use rocket::config::Config;
 use rocket::form::Form;
 use rocket::fs::TempFile;
 use rocket::http::Method;
@@ -90,7 +93,10 @@ fn rocket() -> _ {
     }
     .to_cors()
     .expect("Cors setup failed");
-    rocket::build()
+    let mut config = Config::release_default();
+    let ip = Ipv4Addr::new(0, 0, 0, 0);
+    config.address = IpAddr::V4(ip);
+    rocket::custom(config)
         .mount("/", routes![index, visualise])
         .attach(cors)
 }

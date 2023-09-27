@@ -28,7 +28,6 @@ COPY ./prismaviz-rust .
 
 # ENV RUSTFLAGS='-C linker=x86_64-linux-gnu-gcc'
 
-RUN ROCKET_ENV=production
 RUN cargo build --package prismaviz-api --target x86_64-unknown-linux-musl --release
 
 ####################################################################################################
