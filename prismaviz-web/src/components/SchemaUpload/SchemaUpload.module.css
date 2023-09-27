@@ -1,0 +1,9 @@
+.dropZone {
+  padding: 3rem;
+  border: 2px dashed var(--mantine-color-gray-5);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.dropZone:hover {
+  background-color: var(--mantine-color-gray-1);
+}
