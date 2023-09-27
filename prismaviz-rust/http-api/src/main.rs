@@ -45,38 +45,45 @@ struct VisualiseOutput {
 
 #[post("/api/v1/visualise", data = "<input>")]
 async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<VisualiseOutput>> {
-    let temp_path = std::env::temp_dir().join("temp.prisma");
-    println!("Temp path is {}", temp_path.to_string_lossy());
-    input
-        .into_inner()
-        .schema
-        .copy_to(&temp_path)
-        .await
-        .expect("Failed to read file contents");
-    let contents = std::fs::read_to_string(&temp_path).unwrap();
-    let mut visualiser = SchemaVisualiser::new(contents);
-    visualiser.parse();
-    let models = visualiser.get_models();
-    let result = models
-        .iter()
-        .map(|m| Model {
-            name: m.name.clone(),
-            fields: m
-                .fields
+    let temp_path = Ok(std::env::temp_dir().join("temp.prisma"));
+    match temp_path {
+        Ok(v) => {
+            input
+                .into_inner()
+                .schema
+                .copy_to(&v)
+                .await
+                .expect("Failed to read file contents");
+            let contents = std::fs::read_to_string(&v).unwrap();
+            let mut visualiser = SchemaVisualiser::new(contents);
+            visualiser.parse();
+            let models = visualiser.get_models();
+            let result = models
                 .iter()
-                .map(|f| Field {
-                    r#type: f.data_type.clone(),
-                    name: f.name.clone(),
-                    constraints: f.constraints.to_string(),
-                    relation_ship_fields: f.relation_ships.fields(),
-                    relation_ship_references: f.relation_ships.references(),
-                    is_index: f.is_index.clone(),
+                .map(|m| Model {
+                    name: m.name.clone(),
+                    fields: m
+                        .fields
+                        .iter()
+                        .map(|f| Field {
+                            r#type: f.data_type.clone(),
+                            name: f.name.clone(),
+                            constraints: f.constraints.to_string(),
+                            relation_ship_fields: f.relation_ships.fields(),
+                            relation_ship_references: f.relation_ships.references(),
+                            is_index: f.is_index.clone(),
+                        })
+                        .collect::<Vec<Field>>(),
                 })
-                .collect::<Vec<Field>>(),
-        })
-        .collect::<Vec<Model>>();
+                .collect::<Vec<Model>>();
 
-    Some(Json(VisualiseOutput { result }))
+            Some(Json(VisualiseOutput { result }))
+        }
+        Err(e) => {
+            println!("Error occured during reading temp directory ");
+            e
+        }
+    }
 }
 
 #[launch]
