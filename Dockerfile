@@ -30,11 +30,21 @@ ENV RUSTFLAGS='-C linker=x86_64-linux-gnu-gcc'
 
 RUN cargo build --package prismaviz-api --target x86_64-unknown-linux-musl --release
 
+###### Build Web front end
+
+FROM node:latest as vitebuilder
+
+WORKDIR /app
+
+COPY ./prismaviz-web .
+
+RUN npm instal
+RUN npm run build
+
 ####################################################################################################
 ## Final image
 ####################################################################################################
 FROM scratch
-
 # Import from builder.
 VOLUME [ "/tmp" ]
 COPY --from=builder /etc/passwd /etc/passwd
@@ -44,6 +54,9 @@ WORKDIR /app
 
 # Copy our build
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/prismaviz-api ./
+COPY --from=builder /app/.env ./
+
+COPY --from=vitebuilder /app/dist ./dist
 
 # Use an unprivileged user.
 # USER app:app

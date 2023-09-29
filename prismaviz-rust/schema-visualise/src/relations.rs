@@ -11,13 +11,27 @@ pub enum Relations {
     Reference(RelationalReference),
 }
 
+pub enum RelationshipType {
+    OneToOne,
+    OneToMany,
+    ManyToMany,
+    SelfRelation,
+    MayBe(Box<RelationshipType>),
+    None,
+}
 pub struct RelationShips {
     pub relations: Vec<Relations>,
+    pub r#type: RelationshipType,
+    pub on: String,
 }
 
 impl RelationShips {
     pub fn new() -> RelationShips {
-        RelationShips { relations: vec![] }
+        RelationShips {
+            relations: vec![],
+            r#type: RelationshipType::None,
+            on: String::from(""),
+        }
     }
     pub fn populate(&mut self, attributes: &Vec<Attribute>) {
         attributes.iter().for_each(|attribute| {
@@ -55,7 +69,7 @@ impl RelationShips {
             }
         })
     }
-    pub fn fields(&self) -> String {
+    pub fn fields(&self) -> Vec<String> {
         self.relations
             .iter()
             .map(|rel| match rel {
@@ -64,9 +78,8 @@ impl RelationShips {
             })
             .filter(|rel| rel != "none")
             .collect::<Vec<String>>()
-            .join("\n")
     }
-    pub fn references(&self) -> String {
+    pub fn references(&self) -> Vec<String> {
         self.relations
             .iter()
             .map(|rel| match rel {
@@ -75,6 +88,11 @@ impl RelationShips {
             })
             .filter(|rel| rel != "none")
             .collect::<Vec<String>>()
-            .join("\n")
+    }
+}
+
+impl Default for RelationShips {
+    fn default() -> Self {
+        Self::new()
     }
 }

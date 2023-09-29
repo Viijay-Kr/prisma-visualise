@@ -11,6 +11,7 @@ uuid = { version = "1.4.1", features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ] }
+dotenv = { version = "0.15.0" }
 rocket = { version = "=0.5.0-rc.3", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
 prismaviz = { path = "../schema-visualise", version = "0.1.0" }

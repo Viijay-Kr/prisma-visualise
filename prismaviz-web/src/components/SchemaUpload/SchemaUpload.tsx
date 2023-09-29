@@ -1,26 +1,50 @@
-import { Group, Image, Text, rem } from "@mantine/core";
+import { Button, FileButton, Group, Image, Text, rem } from "@mantine/core";
 import { IconUpload, IconX } from "@tabler/icons-react";
-import { Dropzone, DropzoneProps } from "@mantine/dropzone";
+import { Dropzone, DropzoneProps, FileWithPath } from "@mantine/dropzone";
 import prismaLogo from "../../assets/brand-prisma.svg";
 import styles from "./SchemaUpload.module.css";
+import { MutationFunction, useMutation } from "@tanstack/react-query";
 
-export function SchemaUpload(props: Partial<DropzoneProps>) {
-  const onDrop: DropzoneProps["onDrop"] = async (files) => {
-    let bodyContent = new FormData();
-    bodyContent.append("schema", files[0]);
-    let headersList = {
-      Accept: "*/*",
-    };
-    let response = await fetch("http://localhost:8000/api/v1/visualise", {
+const parseSchemaFile: MutationFunction<unknown, FileWithPath[]> = async (
+  files
+) => {
+  let bodyContent = new FormData();
+  bodyContent.append("schema", files[0]);
+  let headersList = {
+    Accept: "*/*",
+  };
+  const response = await fetch(
+    `${import.meta.env.VITE_PRISMA_API_URL}/api/v1/visualise`,
+    {
       method: "POST",
       body: bodyContent,
       headers: headersList,
-    });
-    console.log(await response.json());
-  };
+    }
+  );
+  return await response.json();
+};
+export function SchemaUpload(props: Partial<DropzoneProps>) {
+  const { mutateAsync, data } = useMutation<unknown, unknown, FileWithPath[]>(
+    ["schema_cache"],
+    parseSchemaFile
+  );
+  if (data) {
+    return (
+      <FileButton
+        accept={"prisma"}
+        onChange={(file) => file && mutateAsync([file])}
+      >
+        {(props) => (
+          <Button style={{ marginLeft: "auto" }} {...props}>
+            Upload another
+          </Button>
+        )}
+      </FileButton>
+    );
+  }
   return (
     <Dropzone
-      onDrop={onDrop}
+      onDrop={mutateAsync}
       onReject={(files) => console.log("rejected files", files)}
       maxSize={3 * 1024 ** 2}
       accept={["prisma"]}

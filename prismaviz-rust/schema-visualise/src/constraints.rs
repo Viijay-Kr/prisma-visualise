@@ -102,6 +102,10 @@ impl Contraints {
         });
     }
 
+    pub fn as_vec(&self) -> Vec<String> {
+        let output = self.constraints.iter().map(|c| c.to_string());
+        return output.collect::<Vec<String>>();
+    }
     pub fn to_string(&self) -> String {
         let output = self.constraints.iter().map(|c| c.to_string());
         return output.collect::<Vec<String>>().join("\n");

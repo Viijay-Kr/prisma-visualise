@@ -1,4 +1,7 @@
-use super::{Attribute, Comment, Field, Identifier, Span, WithAttributes, WithDocumentation, WithIdentifier, WithSpan};
+use super::{
+    Attribute, Comment, Field, Identifier, Span, WithAttributes, WithDocumentation, WithIdentifier,
+    WithSpan,
+};
 
 /// An opaque identifier for a field in an AST model. Use the
 /// `model[field_id]` syntax to resolve the id to an `ast::Field`.
@@ -75,7 +78,7 @@ pub struct Model {
     /// ```
     pub(crate) is_view: bool,
     /// The location of this model in the text representation.
-    pub(crate) span: Span,
+    pub span: Span,
 }
 
 impl Model {

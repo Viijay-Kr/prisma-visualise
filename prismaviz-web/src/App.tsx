@@ -1,19 +1,34 @@
 import "@mantine/core/styles.css";
 
-import { MantineProvider, createTheme } from "@mantine/core";
+import { Flex, MantineProvider, createTheme } from "@mantine/core";
 import { SchemaUpload } from "./components/SchemaUpload/SchemaUpload";
 import "./App.css";
-import { Title } from "./components/Title/Title";
+import { AppTitle } from "./components/AppTitle/AppTitle";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { DisplaySchema } from "./components/DisplaySchema/DisplaySchema";
+const queryClient = new QueryClient();
 
 const theme = createTheme({
   fontFamily: "Space Mono, monospace",
 });
 function App() {
   return (
-    <MantineProvider theme={theme}>
-      <Title></Title>
-      <SchemaUpload></SchemaUpload>
-    </MantineProvider>
+    <QueryClientProvider client={queryClient}>
+      <MantineProvider theme={theme}>
+        <Flex
+          justify="center"
+          align={"center"}
+          direction={"column"}
+          style={{ minWidth: "95vw" }}
+        >
+          <AppTitle order={1}>Prisma Playground</AppTitle>
+          <SchemaUpload />
+        </Flex>
+        <DisplaySchema />
+      </MantineProvider>
+      <ReactQueryDevtools initialIsOpen={false}></ReactQueryDevtools>
+    </QueryClientProvider>
   );
 }
 
