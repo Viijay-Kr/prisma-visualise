@@ -8,11 +8,18 @@ use crate::datamodel_connector::{walker_ext_traits::*, ConnectorCapability};
 use crate::{diagnostics::DatamodelError, validate::validation_pipeline::context::Context};
 use parser_database::{
     ast::{self, WithSpan},
-    walkers::{FieldWalker, PrimaryKeyWalker, ScalarFieldAttributeWalker, ScalarFieldWalker, TypedFieldWalker},
+    walkers::{
+        FieldWalker, PrimaryKeyWalker, ScalarFieldAttributeWalker, ScalarFieldWalker,
+        TypedFieldWalker,
+    },
     ScalarFieldType, ScalarType,
 };
 
-pub(super) fn validate_client_name(field: FieldWalker<'_>, names: &Names<'_>, ctx: &mut Context<'_>) {
+pub(super) fn validate_client_name(
+    field: FieldWalker<'_>,
+    names: &Names<'_>,
+    ctx: &mut Context<'_>,
+) {
     let model = field.model();
 
     let container_type = if field.model().ast_model().is_view() {
@@ -76,7 +83,10 @@ pub(super) fn has_a_unique_default_constraint_name(
     names: &Names<'_>,
     ctx: &mut Context<'_>,
 ) {
-    let name = match field.default_value().map(|w| w.constraint_name(ctx.connector)) {
+    let name = match field
+        .default_value()
+        .map(|w| w.constraint_name(ctx.connector))
+    {
         Some(name) => name,
         None => return,
     };
@@ -124,8 +134,15 @@ pub(crate) fn validate_length_used_with_correct_types(
         return;
     }
 
-    if let Some(r#type) = attr.as_index_field().scalar_field_type().as_builtin_scalar() {
-        if [ScalarType::String, ScalarType::Bytes].iter().any(|t| t == &r#type) {
+    if let Some(r#type) = attr
+        .as_index_field()
+        .scalar_field_type()
+        .as_builtin_scalar()
+    {
+        if [ScalarType::String, ScalarType::Bytes]
+            .iter()
+            .any(|t| t == &r#type)
+        {
             return;
         }
     };
@@ -139,14 +156,21 @@ pub(crate) fn validate_length_used_with_correct_types(
     ));
 }
 
-pub(super) fn validate_native_type_arguments<'db>(field: impl Into<TypedFieldWalker<'db>>, ctx: &mut Context<'db>) {
+pub(super) fn validate_native_type_arguments<'db>(
+    field: impl Into<TypedFieldWalker<'db>>,
+    ctx: &mut Context<'db>,
+) {
     let field = field.into();
 
-    let connector_name = ctx.datasource.map(|ds| ds.active_provider).unwrap_or_else(|| "Default");
-    let (scalar_type, (attr_scope, type_name, args, span)) = match (field.scalar_type(), field.raw_native_type()) {
-        (Some(scalar_type), Some(raw)) => (scalar_type, raw),
-        _ => return,
-    };
+    let connector_name = ctx
+        .datasource
+        .map(|ds| ds.active_provider)
+        .unwrap_or_else(|| "Default");
+    let (scalar_type, (attr_scope, type_name, args, span)) =
+        match (field.scalar_type(), field.raw_native_type()) {
+            (Some(scalar_type), Some(raw)) => (scalar_type, raw),
+            _ => return,
+        };
 
     // Validate that the attribute is scoped with the right datasource name.
     if let Some(datasource) = ctx.datasource {
@@ -174,7 +198,8 @@ pub(super) fn validate_native_type_arguments<'db>(field: impl Into<TypedFieldWal
     let number_of_args = args.len();
 
     if number_of_args < constructor.number_of_args
-        || ((number_of_args > constructor.number_of_args) && constructor.number_of_optional_args == 0)
+        || ((number_of_args > constructor.number_of_args)
+            && constructor.number_of_optional_args == 0)
     {
         ctx.push_error(DatamodelError::new_argument_count_mismatch_error(
             type_name,
@@ -206,16 +231,28 @@ pub(super) fn validate_native_type_arguments<'db>(field: impl Into<TypedFieldWal
             .collect::<Vec<_>>()
             .join(" or ");
 
-        let err = DatamodelError::new_incompatible_native_type(type_name, scalar_type.as_str(), &expected_types, span);
+        let err = DatamodelError::new_incompatible_native_type(
+            type_name,
+            scalar_type.as_str(),
+            &expected_types,
+            span,
+        );
 
         ctx.push_error(err);
 
         return;
     }
 
-    if let Some(native_type) = ctx.connector.parse_native_type(type_name, args, span, ctx.diagnostics) {
+    if let Some(native_type) =
         ctx.connector
-            .validate_native_type_arguments(&native_type, &scalar_type, span, ctx.diagnostics);
+            .parse_native_type(type_name, args, span, ctx.diagnostics)
+    {
+        ctx.connector.validate_native_type_arguments(
+            &native_type,
+            &scalar_type,
+            span,
+            ctx.diagnostics,
+        );
     }
 }
 
@@ -237,7 +274,13 @@ pub(super) fn validate_default_value(field: ScalarFieldWalker<'_>, ctx: &mut Con
     }
 
     if default_mapped_name.is_some() {
-        validate_db_name(model_name, default_attribute.unwrap(), default_mapped_name, ctx, false);
+        validate_db_name(
+            model_name,
+            default_attribute.unwrap(),
+            default_mapped_name,
+            ctx,
+            false,
+        );
     }
 
     let default_value = field.default_value().map(|d| d.value());
@@ -247,7 +290,10 @@ pub(super) fn validate_default_value(field: ScalarFieldWalker<'_>, ctx: &mut Con
     default_value::validate_auto_param(default_value, ctx);
 }
 
-pub(super) fn validate_scalar_field_connector_specific(field: ScalarFieldWalker<'_>, ctx: &mut Context<'_>) {
+pub(super) fn validate_scalar_field_connector_specific(
+    field: ScalarFieldWalker<'_>,
+    ctx: &mut Context<'_>,
+) {
     let container = if field.model().ast_model().is_view() {
         "view"
     } else {
@@ -322,7 +368,11 @@ pub(super) fn validate_unsupported_field_type(field: ScalarFieldWalker<'_>, ctx:
     use once_cell::sync::Lazy;
     use regex::Regex;
 
-    let source = if let Some(s) = ctx.datasource { s } else { return };
+    let source = if let Some(s) = ctx.datasource {
+        s
+    } else {
+        return;
+    };
 
     static TYPE_REGEX: Lazy<Regex> = Lazy::new(|| {
         Regex::new(r#"(?x)
@@ -347,12 +397,19 @@ pub(super) fn validate_unsupported_field_type(field: ScalarFieldWalker<'_>, ctx:
         let params = captures.name("params");
         let args = match params {
             None => vec![],
-            Some(params) => params.as_str().split(',').map(|s| s.trim().to_string()).collect(),
+            Some(params) => params
+                .as_str()
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .collect(),
         };
 
-        if let Some(native_type) =
-            connector.parse_native_type(prefix, &args, field.ast_field().span(), &mut Default::default())
-        {
+        if let Some(native_type) = connector.parse_native_type(
+            prefix,
+            &args,
+            field.ast_field().span(),
+            &mut Default::default(),
+        ) {
             let prisma_type = connector.scalar_type_for_native_type(&native_type);
 
             let msg = format!(
@@ -360,13 +417,19 @@ pub(super) fn validate_unsupported_field_type(field: ScalarFieldWalker<'_>, ctx:
                         unsupported_lit, field.name(), prisma_type.as_str(), &source.name, connector.native_type_to_string(&native_type)
                     );
 
-            ctx.push_error(DatamodelError::new_validation_error(&msg, field.ast_field().span()));
+            ctx.push_error(DatamodelError::new_validation_error(
+                &msg,
+                field.ast_field().span(),
+            ));
         }
     }
 }
 
 pub(crate) fn id_supports_clustering_setting(pk: PrimaryKeyWalker<'_>, ctx: &mut Context<'_>) {
-    if ctx.connector.has_capability(ConnectorCapability::ClusteringSetting) {
+    if ctx
+        .connector
+        .has_capability(ConnectorCapability::ClusteringSetting)
+    {
         return;
     }
 
@@ -385,7 +448,10 @@ pub(crate) fn id_supports_clustering_setting(pk: PrimaryKeyWalker<'_>, ctx: &mut
 ///
 /// Here we check the primary key. Another check in index validations.
 pub(crate) fn clustering_can_be_defined_only_once(pk: PrimaryKeyWalker<'_>, ctx: &mut Context<'_>) {
-    if !ctx.connector.has_capability(ConnectorCapability::ClusteringSetting) {
+    if !ctx
+        .connector
+        .has_capability(ConnectorCapability::ClusteringSetting)
+    {
         return;
     }
 

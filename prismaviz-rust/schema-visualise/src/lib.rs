@@ -1,10 +1,10 @@
 mod attributes;
 mod constraints;
+mod field_type;
 mod relations;
 
-use std::fmt::Display;
-
 pub use crate::{attributes::ModelAttributes, constraints::Contraints, relations::RelationShips};
+use field_type::PrismaVizFieldType;
 use prettytable::row;
 use prettytable::Table;
 use psl_core::schema_ast::ast::FieldType;
@@ -14,48 +14,17 @@ use psl_core::{
     schema_ast::{self, ast::SchemaAst},
 };
 
-#[derive(Clone, Debug)]
-pub enum DataTypeEnum {
-    Int(String),
-    VarChar(String),
-    Boolean(String),
-    BigInt(String),
-    Float(String),
-    Decimal(String),
-    DateTime(String),
-    Json(String),
-    Bytes(String),
-    Unsupported(String),
-    Relational(String),
-}
-
-impl Display for DataTypeEnum {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct DataType {
-    pub data_type: DataTypeEnum,
-    pub modifier: String,
-}
-impl Display for DataType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} {:?}", self.data_type, self.modifier)
-    }
-}
 pub struct PrismaVizModelField {
     pub attributes: ModelAttributes,
     pub relation_ships: RelationShips,
     pub constraints: Contraints,
     pub name: String,
-    pub data_type: DataType,
+    pub r#type: PrismaVizFieldType,
     pub is_index: String,
 }
 
 impl PrismaVizModelField {
-    fn new(name: String, data_type: DataType, is_index: &str) -> PrismaVizModelField {
+    fn new(name: String, data_type: PrismaVizFieldType, is_index: &str) -> PrismaVizModelField {
         PrismaVizModelField {
             attributes: ModelAttributes { values: vec![] },
             relation_ships: RelationShips {
@@ -67,7 +36,7 @@ impl PrismaVizModelField {
                 constraints: vec![],
             },
             name,
-            data_type,
+            r#type: data_type,
             is_index: is_index.to_string(),
         }
     }
@@ -132,14 +101,12 @@ impl SchemaVisualiser {
                 constraints.populate(&field.attributes);
                 let mut relationships = RelationShips::new();
                 relationships.populate(&field.attributes);
-                let data_type = match &field.field_type {
+
+                let mut field_type = PrismaVizFieldType::new();
+                match &field.field_type {
                     FieldType::Unsupported(t, _) => {
                         format!("Field type {}", t);
-                        let dtype = DataType {
-                            data_type: DataTypeEnum::Unsupported(t.to_owned()),
-                            modifier: String::from(""),
-                        };
-                        dtype
+                        field_type.resolve_data_type(t.clone(), "".to_string());
                     }
                     FieldType::Supported(t) => {
                         let name = t.name.to_string();
@@ -149,56 +116,14 @@ impl SchemaVisualiser {
                         if modifier != String::from("[]") {
                             modifier = String::from("");
                         }
-                        let dtype = match name.as_str() {
-                            "Int" => DataType {
-                                data_type: DataTypeEnum::Int(name.clone()),
-                                modifier,
-                            },
-                            "String" => DataType {
-                                data_type: DataTypeEnum::VarChar(name.clone()),
-                                modifier,
-                            },
-                            "BigInt" => DataType {
-                                data_type: DataTypeEnum::BigInt(name.clone()),
-                                modifier,
-                            },
-                            "Float" => DataType {
-                                data_type: DataTypeEnum::Float(name.clone()),
-                                modifier,
-                            },
-                            "Decimal" => DataType {
-                                data_type: DataTypeEnum::Decimal(name.clone()),
-                                modifier,
-                            },
-                            "DateTime" => DataType {
-                                data_type: DataTypeEnum::DateTime(name.clone()),
-                                modifier,
-                            },
-                            "Boolean" => DataType {
-                                data_type: DataTypeEnum::Boolean(name.clone()),
-                                modifier,
-                            },
-                            "Json" => DataType {
-                                data_type: DataTypeEnum::Json(name.clone()),
-                                modifier,
-                            },
-                            "Bytes" => DataType {
-                                data_type: DataTypeEnum::Bytes(name.clone()),
-                                modifier,
-                            },
-                            _ => DataType {
-                                data_type: DataTypeEnum::Relational(name.clone()),
-                                modifier,
-                            },
-                        };
-                        dtype
+                        field_type.resolve_data_type(name, modifier);
                     }
                 };
 
                 let is_index = model_attributes.is_index(field.name());
 
                 let mut prisma_vis_model_field =
-                    PrismaVizModelField::new(field.name().to_string(), data_type, is_index);
+                    PrismaVizModelField::new(field.name().to_string(), field_type, is_index);
                 prisma_vis_model_field.relation_ships = relationships;
                 prisma_vis_model_field.constraints = constraints;
                 prisma_vis_model_field.attributes = model_attributes;
@@ -229,22 +154,10 @@ impl SchemaVisualiser {
                     constraint_strings,
                     field.attributes.constraint_strings(&field.name)
                 );
-                let field_type = match &field.data_type.data_type {
-                    DataTypeEnum::Int(v) => v,
-                    DataTypeEnum::VarChar(v) => v,
-                    DataTypeEnum::Boolean(v) => v,
-                    DataTypeEnum::BigInt(v) => v,
-                    DataTypeEnum::Float(v) => v,
-                    DataTypeEnum::Decimal(v) => v,
-                    DataTypeEnum::DateTime(v) => v,
-                    DataTypeEnum::Json(v) => v,
-                    DataTypeEnum::Bytes(v) => v,
-                    DataTypeEnum::Unsupported(v) => v,
-                    DataTypeEnum::Relational(v) => v,
-                };
+                let field_type = field.r#type.resolve_with_modifier();
                 table.add_row(row![
                     field.name,
-                    field_type.to_owned() + &field.data_type.modifier,
+                    field_type,
                     constraint_strings,
                     field.relation_ships.fields().join("\n"),
                     field.relation_ships.references().join("\n"),
