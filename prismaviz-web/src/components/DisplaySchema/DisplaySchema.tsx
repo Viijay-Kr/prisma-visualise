@@ -1,14 +1,6 @@
-import {
-  Button,
-  Code,
-  Container,
-  Flex,
-  Grid,
-  Table,
-  Text,
-} from "@mantine/core";
+import { Button, Flex, Grid, Table, Text } from "@mantine/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { SchemaResult } from "../../types";
 import {
   IconCode,
@@ -67,7 +59,7 @@ const Model = ({
     { code: string }
   >(
     [`code_highlight_${model.id}`],
-    async (variables) => {
+    async () => {
       const response = await fetch(
         `${import.meta.env.VITE_PRISMA_API_URL}/api/v1/code_highlight`,
         {
@@ -267,7 +259,6 @@ const Model = ({
   };
   const [displayAs, setDisplayAs] =
     useState<keyof typeof DisplayAs>("collapsed");
-  const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (displayAs !== "collapsed") {
