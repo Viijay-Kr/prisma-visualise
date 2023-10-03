@@ -2,6 +2,10 @@ export interface SchemaResult {
   result: Array<{
     id: string;
     name: string;
+    span: {
+      start: number;
+      end: number;
+    };
     fields: Array<{
       name: string;
       type: string;
@@ -12,4 +16,5 @@ export interface SchemaResult {
     }>;
     code: string;
   }>;
+  schema: string;
 }

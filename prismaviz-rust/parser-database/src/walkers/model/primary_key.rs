@@ -73,7 +73,9 @@ impl<'db> PrimaryKeyWalker<'db> {
     }
 
     /// The scalar fields covered by the id, and their arguments.
-    pub fn scalar_field_attributes(self) -> impl ExactSizeIterator<Item = ScalarFieldAttributeWalker<'db>> + 'db {
+    pub fn scalar_field_attributes(
+        self,
+    ) -> impl ExactSizeIterator<Item = ScalarFieldAttributeWalker<'db>> + 'db {
         self.attribute
             .fields
             .iter()
@@ -86,18 +88,19 @@ impl<'db> PrimaryKeyWalker<'db> {
     }
 
     /// Do the constrained fields match exactly these?
-    pub(crate) fn contains_exactly_fields_by_id(self, fields: &[ScalarFieldId]) -> bool {
+    pub fn contains_exactly_fields_by_id(self, fields: &[ScalarFieldId]) -> bool {
         self.attribute.fields.len() == fields.len()
-            && self
-                .attribute
-                .fields
-                .iter()
-                .zip(fields)
-                .all(|(a, b)| matches!(a.path.field_in_index(), either::Either::Left(id)  if id == *b))
+            && self.attribute.fields.iter().zip(fields).all(
+                |(a, b)| matches!(a.path.field_in_index(), either::Either::Left(id)  if id == *b),
+            )
     }
 
     /// Do the constrained fields match exactly these?
-    pub fn contains_exactly_fields(self, fields: impl ExactSizeIterator<Item = ScalarFieldWalker<'db>>) -> bool {
-        self.attribute.fields.len() == fields.len() && self.fields().zip(fields).all(|(a, b)| a == b)
+    pub fn contains_exactly_fields(
+        self,
+        fields: impl ExactSizeIterator<Item = ScalarFieldWalker<'db>>,
+    ) -> bool {
+        self.attribute.fields.len() == fields.len()
+            && self.fields().zip(fields).all(|(a, b)| a == b)
     }
 }

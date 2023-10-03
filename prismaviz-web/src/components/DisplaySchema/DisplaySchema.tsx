@@ -7,7 +7,7 @@ import {
   Table,
   Text,
 } from "@mantine/core";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { SchemaResult } from "../../types";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { Tooltip } from "../Tooltip/Tooltip";
 import "./DisplaySchema.css";
+import DomPurify from "dompurify";
 
 export const DisplaySchema = () => {
   const queryClient = useQueryClient();
@@ -38,13 +39,12 @@ export const DisplaySchema = () => {
   return activeSchema ? (
     <Grid mt={"md"} gutter={"xs"}>
       {activeSchema.result.map((model) => (
-        <Grid.Col span={model.id === activeModel ? 6 : 2} key={model.name}>
-          <Model
-            activeModel={activeModel}
-            setActiveModel={setActiveModel}
-            model={model}
-          />
-        </Grid.Col>
+        <Model
+          activeModel={activeModel}
+          setActiveModel={setActiveModel}
+          model={model}
+          schema={activeSchema.schema}
+        />
       ))}
     </Grid>
   ) : null;
@@ -54,15 +54,46 @@ const Model = ({
   model,
   setActiveModel,
   activeModel,
+  schema,
 }: {
   model: SchemaResult["result"][number];
   setActiveModel: (id: string) => void;
   activeModel: string;
+  schema: SchemaResult["schema"];
 }) => {
+  const codeHighlight = useMutation<
+    { code: { html: string } },
+    unknown,
+    { code: string }
+  >(
+    [`code_highlight_${model.id}`],
+    async (variables) => {
+      const response = await fetch(
+        `${import.meta.env.VITE_PRISMA_API_URL}/api/v1/code_highlight`,
+        {
+          method: "POST",
+          body: JSON.stringify({ span: model.span, schema }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return await response.json();
+    },
+    {
+      onSuccess() {
+        setDisplayAs("code");
+      },
+    }
+  );
   const CodeIcon = () => (
     <Tooltip label={"Code"}>
       <Button
-        onClick={() => setDisplayAs("code")}
+        onClick={() => {
+          codeHighlight.mutate({
+            code: model.code,
+          });
+        }}
         size="xs"
         variant="transparent"
         p={"0"}
@@ -120,7 +151,7 @@ const Model = ({
   };
 
   const ModelCaption = () => (
-    <Container
+    <Flex
       style={{
         textAlign: "left",
         marginBottom: "0px",
@@ -131,20 +162,25 @@ const Model = ({
         borderTopLeftRadius: "8px",
         borderTopRightRadius: "8px",
       }}
-      bg={"grape.7"}
+      bg={"dark.5"}
     >
       {model.name}
-    </Container>
+    </Flex>
   );
 
   const DisplayAsCode = () => (
-    <Code
-      style={{ fontSize: "14px", color: "#845EF7" }}
-      color="var(--mantine-color-blue-light)"
-      block
-    >
-      {model.code}
-    </Code>
+    <Flex
+      style={{
+        fontSize: "16px",
+        color: "#845EF7",
+        borderRadius: 0,
+      }}
+      bg="dark.9"
+      p={"md"}
+      dangerouslySetInnerHTML={{
+        __html: DomPurify.sanitize(codeHighlight.data?.code.html ?? ""),
+      }}
+    />
   );
 
   const DisplayAsTable = () => (
@@ -246,7 +282,7 @@ const Model = ({
   }, [activeModel]);
 
   return (
-    <>
+    <Grid.Col span={model.id === activeModel ? "auto" : 2} key={model.name}>
       <ModelCaption />
       {DisplayAs[displayAs]}
       <Flex
@@ -255,7 +291,7 @@ const Model = ({
           borderBottomLeftRadius: "8px",
           borderBottomRightRadius: "8px",
         }}
-        bg={"dark.5"}
+        bg={"dark.6"}
         gap={"sm"}
       >
         <CollapsedIcon />
@@ -263,6 +299,6 @@ const Model = ({
         <CodeIcon />
         <RelationShipIcon />
       </Flex>
-    </>
+    </Grid.Col>
   );
 };

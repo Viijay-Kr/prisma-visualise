@@ -4,8 +4,10 @@ use rocket::fs::TempFile;
 use rocket::serde::{json::Json, Deserialize, Serialize};
 
 use uuid::Uuid;
+
+use crate::code_highlight;
 #[derive(Debug, FromForm)]
-struct VisualiseInput<'r> {
+pub(crate) struct VisualiseInput<'r> {
     schema: TempFile<'r>,
 }
 
@@ -26,11 +28,13 @@ struct Model {
     pub name: String,
     pub fields: Vec<Field>,
     pub code: String,
+    pub span: code_highlight::WeakSpan,
 }
 #[derive(Serialize)]
 #[serde(crate = "rocket::serde")]
-struct VisualiseOutput {
+pub(crate) struct VisualiseOutput {
     result: Vec<Model>,
+    schema: String,
 }
 
 #[post("/api/v1/visualise", data = "<input>")]
@@ -46,7 +50,7 @@ pub async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<Visualise
                 .await
                 .expect("Failed to read file contents");
             let contents = std::fs::read_to_string(&v).unwrap();
-            let mut visualiser = SchemaVisualiser::new(contents);
+            let mut visualiser = SchemaVisualiser::new(contents.clone());
             visualiser.parse();
             let models = visualiser.get_models();
             let result = models
@@ -55,6 +59,10 @@ pub async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<Visualise
                     id: Uuid::new_v4().hyphenated().to_string(),
                     name: m.name.clone(),
                     code: m.code.clone(),
+                    span: code_highlight::WeakSpan {
+                        start: m.span.start,
+                        end: m.span.end,
+                    },
                     fields: m
                         .fields
                         .iter()
@@ -70,7 +78,10 @@ pub async fn visualise(input: Form<VisualiseInput<'_>>) -> Option<Json<Visualise
                 })
                 .collect::<Vec<Model>>();
             let _ = std::fs::remove_file::<_>(v);
-            Some(Json(VisualiseOutput { result }))
+            Some(Json(VisualiseOutput {
+                result,
+                schema: contents,
+            }))
         }
         Err(e) => {
             format!("failed to read temp path");

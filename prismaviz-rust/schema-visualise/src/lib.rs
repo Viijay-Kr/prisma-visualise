@@ -7,6 +7,7 @@ pub use crate::{attributes::ModelAttributes, constraints::Contraints, relations:
 use field_type::PrismaVizFieldType;
 use prettytable::row;
 use prettytable::Table;
+use psl_core::diagnostics::Span;
 use psl_core::schema_ast::ast::FieldType;
 use psl_core::schema_ast::ast::WithIdentifier;
 use psl_core::{
@@ -45,14 +46,16 @@ pub struct PrismaVizModel {
     pub name: String,
     pub fields: Vec<PrismaVizModelField>,
     pub code: String,
+    pub span: Span,
 }
 
 impl PrismaVizModel {
-    pub fn new(name: String, code: String) -> PrismaVizModel {
+    pub fn new(name: String, code: String, span: Span) -> PrismaVizModel {
         PrismaVizModel {
             name,
             fields: vec![],
             code,
+            span,
         }
     }
 }
@@ -90,7 +93,7 @@ impl SchemaVisualiser {
             });
         model_fields.for_each(|(model, fields, attributes, span)| {
             let code = &self.schema.as_str()[span.start..span.end];
-            let mut prisma_viz_model = PrismaVizModel::new(model, String::from(code));
+            let mut prisma_viz_model = PrismaVizModel::new(model, String::from(code), span);
 
             let mut model_attributes = ModelAttributes::new();
             model_attributes.populate(&attributes);

@@ -17,6 +17,7 @@
     "@mantine/nprogress": "^7.0.0",
     "@tabler/icons-react": "^2.35.0",
     "@tanstack/react-query": "^4.35.3",
+    "dompurify": "^3.0.6",
     "framer-motion": "^10.16.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^4.34.1",
     "@tanstack/react-query-devtools": "^4.35.3",
+    "@types/dompurify": "^3.0.3",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

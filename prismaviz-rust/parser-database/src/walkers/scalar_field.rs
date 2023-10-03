@@ -1,6 +1,8 @@
 use crate::{
     ast::{self, WithName},
-    types::{DefaultAttribute, FieldWithArgs, OperatorClassStore, ScalarField, ScalarType, SortOrder},
+    types::{
+        DefaultAttribute, FieldWithArgs, OperatorClassStore, ScalarField, ScalarType, SortOrder,
+    },
     walkers::*,
     OperatorClass, ParserDatabase, ScalarFieldId, ScalarFieldType,
 };
@@ -18,7 +20,9 @@ impl<'db> ScalarFieldWalker<'db> {
 
     /// The field node in the AST.
     pub fn ast_field(self) -> &'db ast::Field {
-        let ScalarField { model_id, field_id, .. } = self.attributes();
+        let ScalarField {
+            model_id, field_id, ..
+        } = self.attributes();
         &self.db.ast[*model_id][*field_id]
     }
 
@@ -38,7 +42,9 @@ impl<'db> ScalarFieldWalker<'db> {
 
         self.model().indexes().any(|idx| {
             let mut fields = idx.fields();
-            idx.is_unique() && fields.len() == 1 && fields.next().map(|f| f.field_id()) == Some(self.field_id())
+            idx.is_unique()
+                && fields.len() == 1
+                && fields.next().map(|f| f.field_id()) == Some(self.field_id())
         })
     }
 
@@ -66,7 +72,9 @@ impl<'db> ScalarFieldWalker<'db> {
 
     /// Does the field have an `@default(autoincrement())` attribute?
     pub fn is_autoincrement(self) -> bool {
-        self.default_value().map(|dv| dv.is_autoincrement()).unwrap_or(false)
+        self.default_value()
+            .map(|dv| dv.is_autoincrement())
+            .unwrap_or(false)
     }
 
     /// Does the field define a primary key by its own.
@@ -105,7 +113,9 @@ impl<'db> ScalarFieldWalker<'db> {
 
     /// Is this field's type an enum? If yes, walk the enum.
     pub fn field_type_as_enum(self) -> Option<EnumWalker<'db>> {
-        self.scalar_field_type().as_enum().map(|id| self.db.walk(id))
+        self.scalar_field_type()
+            .as_enum()
+            .map(|id| self.db.walk(id))
     }
 
     /// The name in the `@map(<name>)` attribute.
@@ -126,12 +136,17 @@ impl<'db> ScalarFieldWalker<'db> {
         self.attributes()
             .native_type
             .as_ref()
-            .map(move |(datasource_name, name, args, span)| (&db[*datasource_name], &db[*name], args.as_slice(), *span))
+            .map(move |(datasource_name, name, args, span)| {
+                (&db[*datasource_name], &db[*name], args.as_slice(), *span)
+            })
     }
 
     /// Is the type of the field `Unsupported("...")`?
     pub fn is_unsupported(self) -> bool {
-        matches!(self.ast_field().field_type, ast::FieldType::Unsupported(_, _))
+        matches!(
+            self.ast_field().field_type,
+            ast::FieldType::Unsupported(_, _)
+        )
     }
 
     /// The `@default()` attribute of the field, if any.

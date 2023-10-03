@@ -5,10 +5,8 @@ mod visualise;
 extern crate rocket;
 use dotenv::dotenv;
 use rocket::config::Config;
-use rocket::form::Form;
-use rocket::fs::{NamedFile, TempFile};
+use rocket::fs::NamedFile;
 use rocket::http::Method;
-use rocket::serde::{json::Json, Deserialize, Serialize};
 use rocket::Request;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::net::{IpAddr, Ipv4Addr};
@@ -49,7 +47,7 @@ fn rocket() -> _ {
             .into_iter()
             .map(From::from)
             .collect(),
-        allowed_headers: AllowedHeaders::some(&["Authorization", "Accept"]),
+        allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
         allow_credentials: true,
         ..Default::default()
     }

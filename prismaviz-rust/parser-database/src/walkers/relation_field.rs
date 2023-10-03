@@ -17,7 +17,9 @@ impl<'db> RelationFieldWalker<'db> {
 
     /// The foreign key name of the relation (`@relation(map: ...)`).
     pub fn mapped_name(self) -> Option<&'db str> {
-        self.attributes().mapped_name.map(|string_id| &self.db[string_id])
+        self.attributes()
+            .mapped_name
+            .map(|string_id| &self.db[string_id])
     }
 
     /// The field name.
@@ -27,7 +29,9 @@ impl<'db> RelationFieldWalker<'db> {
 
     /// The AST node of the field.
     pub fn ast_field(self) -> &'db ast::Field {
-        let RelationField { model_id, field_id, .. } = self.db.types[self.id];
+        let RelationField {
+            model_id, field_id, ..
+        } = self.db.types[self.id];
         &self.db.ast[model_id][field_id]
     }
 
@@ -78,12 +82,16 @@ impl<'db> RelationFieldWalker<'db> {
     /// A valid relation is defined by two relation fields. This method returns the _other_
     /// relation field in the same relation.
     pub fn opposite_relation_field(self) -> Option<RelationFieldWalker<'db>> {
-        self.relation().relation_fields().find(|rf| rf.id != self.id)
+        self.relation()
+            .relation_fields()
+            .find(|rf| rf.id != self.id)
     }
 
     /// The `@relation` attribute in the field AST.
     pub fn relation_attribute(self) -> Option<&'db ast::Attribute> {
-        self.attributes().relation_attribute.map(|id| &self.db.ast[id])
+        self.attributes()
+            .relation_attribute
+            .map(|id| &self.db.ast[id])
     }
 
     /// Does the relation field reference the passed in model?
@@ -97,7 +105,9 @@ impl<'db> RelationFieldWalker<'db> {
     }
 
     /// The fields in the `@relation(references: ...)` argument.
-    pub fn referenced_fields(self) -> Option<impl ExactSizeIterator<Item = ScalarFieldWalker<'db>>> {
+    pub fn referenced_fields(
+        self,
+    ) -> Option<impl ExactSizeIterator<Item = ScalarFieldWalker<'db>>> {
         self.attributes()
             .references
             .as_ref()
@@ -114,7 +124,9 @@ impl<'db> RelationFieldWalker<'db> {
     pub fn relation_name(self) -> RelationName<'db> {
         self.explicit_relation_name()
             .map(RelationName::Explicit)
-            .unwrap_or_else(|| RelationName::generated(self.model().name(), self.related_model().name()))
+            .unwrap_or_else(|| {
+                RelationName::generated(self.model().name(), self.related_model().name())
+            })
     }
 
     /// The arity to enforce, based on the arity of the fields. If any referencing field is
@@ -149,7 +161,9 @@ impl<'db> RelationFieldWalker<'db> {
     }
 
     /// The fields in the `fields: [...]` argument in the forward relation field.
-    pub fn referencing_fields(self) -> Option<impl ExactSizeIterator<Item = ScalarFieldWalker<'db>> + Clone> {
+    pub fn referencing_fields(
+        self,
+    ) -> Option<impl ExactSizeIterator<Item = ScalarFieldWalker<'db>> + Clone> {
         self.fields()
     }
 

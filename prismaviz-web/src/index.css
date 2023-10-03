@@ -18,3 +18,73 @@ body {
   display: flex;
   background: var(--mantine-color-red-0);
 }
+
+/**
+ code highlighting css
+**/
+.keyword,
+.field-modifier,
+.open-argument,
+.close-argument {
+  color: var(--mantine-color-pink-6);
+  font-weight: 700;
+  font-style: normal;
+}
+.model-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.model-name-open {
+  display: flex;
+  gap: 1rem;
+}
+.arguments,
+.square-bracket,
+.argument-list-item {
+  color: var(--mantine-color-blue-2);
+  font-style: normal;
+}
+.argument-relational-fields,
+.argument-relational-references {
+  font-style: italic;
+  color: var(--mantine-color-orange-4);
+  display: flex;
+}
+.argument-list-container {
+  display: flex;
+  margin-left: 0.5rem;
+}
+.model-name,
+.field-type {
+  color: var(--mantine-color-blue-2);
+  font-style: italic;
+}
+.relational-field-type {
+  color: var(--mantine-color-indigo-4);
+  font-weight: 700;
+  font-style: italic;
+  text-transform: capitalize;
+}
+
+.open-curly,
+.closed-curly,
+.field-name {
+  color: var(--mantine-color-white);
+}
+.fields-wrapper {
+  display: grid;
+  margin-left: 1rem;
+}
+.field-wrapper {
+  display: flex;
+  gap: 1.25rem;
+}
+.attributes {
+  color: var(--mantine-color-yellow-3);
+  display: flex;
+}
+.separator {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}

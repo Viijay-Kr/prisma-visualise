@@ -1,5 +1,6 @@
 use super::{
-    Attribute, Comment, Identifier, Span, WithAttributes, WithDocumentation, WithIdentifier, WithName, WithSpan,
+    Attribute, Comment, Identifier, Span, WithAttributes, WithDocumentation, WithIdentifier,
+    WithName, WithSpan,
 };
 
 /// A field definition in a model or a composite type.
@@ -37,7 +38,7 @@ pub struct Field {
     /// ```
     pub(crate) documentation: Option<Comment>,
     /// The location of this field in the text representation.
-    pub(crate) span: Span,
+    pub span: Span,
 }
 
 impl Field {
