@@ -77,3 +77,21 @@ impl PrismaVizFieldType {
         self.get_data_type().to_owned() + &self.modifier.to_owned()
     }
 }
+
+pub struct RefinedFieldType {
+    pub raw: String,
+    pub html: String,
+}
+
+impl RefinedFieldType {
+    pub fn new(raw: String) -> RefinedFieldType {
+        return RefinedFieldType {
+            raw,
+            html: String::from(""),
+        };
+    }
+
+    pub fn resolve_psl_type(&self) {
+        
+    }
+}

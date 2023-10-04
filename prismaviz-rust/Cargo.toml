@@ -9,7 +9,6 @@ members = [
     "psl",
     "builtin-connectors",
     "http-api",
-    "schema-highlight",
 ]
 resolver = "2"
 

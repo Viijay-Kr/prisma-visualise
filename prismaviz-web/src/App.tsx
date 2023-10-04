@@ -22,7 +22,7 @@ function App() {
           direction={"column"}
           style={{ minWidth: "95vw" }}
         >
-          <AppTitle order={1}>Prisma Playground</AppTitle>
+          <AppTitle order={1}>Prisma Inspector </AppTitle>
           <SchemaUpload />
         </Flex>
         <DisplaySchema />
