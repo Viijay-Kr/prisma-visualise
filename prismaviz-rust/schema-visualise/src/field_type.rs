@@ -1,5 +1,15 @@
 use std::fmt::Display;
 
+use psl_core::{
+    parser_database::{
+        walkers::{RefinedFieldWalker, Walker},
+        ScalarType,
+    },
+    schema_ast::ast::{FieldArity, FieldId, ModelId},
+};
+
+use crate::attributes::{PslArgument, PslAttribute};
+
 #[derive(Clone, Debug)]
 pub enum DataTypes {
     Int(String),
@@ -78,20 +88,118 @@ impl PrismaVizFieldType {
     }
 }
 
-pub struct RefinedFieldType {
-    pub raw: String,
-    pub html: String,
+pub struct PslField {
+    pub name: String,
+    pub field_type: String,
+    pub modifier: String,
+    pub attributes: Vec<PslAttribute>,
+    pub is_relational: bool,
 }
 
-impl RefinedFieldType {
-    pub fn new(raw: String) -> RefinedFieldType {
-        return RefinedFieldType {
-            raw,
-            html: String::from(""),
+impl PslField {
+    pub fn new(name: String) -> PslField {
+        return PslField {
+            name,
+            field_type: "".to_string(),
+            modifier: String::from(""),
+            attributes: vec![],
+            is_relational: false,
         };
     }
 
-    pub fn resolve_psl_type(&self) {
-        
+    pub fn resolve_field(&mut self, field: Walker<'_, (ModelId, FieldId)>) {
+        let refined_field_type = field.refine();
+        self.modifier = match field.ast_field().arity {
+            FieldArity::Required => "".to_owned(),
+            FieldArity::Optional => "?".to_owned(),
+            FieldArity::List => "[]".to_owned(),
+        };
+        match refined_field_type {
+            RefinedFieldWalker::Scalar(f) => {
+                self.field_type = match f.scalar_type() {
+                    Some(v) => match v {
+                        ScalarType::Int => "Int".to_string(),
+                        ScalarType::BigInt => "BigInt".to_string(),
+                        ScalarType::Float => "Float".to_string(),
+                        ScalarType::Boolean => "Boolean".to_string(),
+                        ScalarType::String => "String".to_string(),
+                        ScalarType::DateTime => "DateTime".to_string(),
+                        ScalarType::Json => "Json".to_string(),
+                        ScalarType::Bytes => "Bytes".to_string(),
+                        ScalarType::Decimal => "Decimal".to_string(),
+                    },
+                    None => {
+                        println!("Looks like field type is not resolvable");
+                        "".to_string()
+                    }
+                };
+                // Start filling the attributes
+                f.ast_field()
+                    .attributes
+                    .clone()
+                    .into_iter()
+                    .for_each(|attr| {
+                        let mut attribute = PslAttribute::new(attr.name.name, false);
+                        attribute.resolve_arguments(attr.arguments);
+                        self.attributes.push(attribute)
+                    })
+            }
+            RefinedFieldWalker::Relation(f) => {
+                self.field_type = f.name().to_string();
+                self.is_relational = true;
+                f.ast_field()
+                    .attributes
+                    .clone()
+                    .into_iter()
+                    .for_each(|attr| {
+                        let mut attribute = PslAttribute::new(attr.name.name, true);
+                        attribute.resolve_arguments(attr.arguments);
+                        self.attributes.push(attribute)
+                    })
+            }
+        }
+    }
+
+    pub fn resolve_field_name_markup(&self) -> String {
+        format!(r#"<span class="field-name">{}</span>"#, self.name)
+    }
+
+    pub fn resolve_field_type_markup(&self) -> String {
+        format!(
+            r#"
+                    <span class="field-type">
+                        {}
+                        <span class="field-modifier">
+                            {}
+                        </span>
+                    </span>"#,
+            self.field_type, self.modifier
+        )
+    }
+
+    pub fn resolve_attributes_markup(&self) -> Vec<String> {
+        self.attributes
+            .iter()
+            .map(|attr| {
+                let attr_name_markup = attr.attribute_name_markup();
+                let arguments_markup = attr.arguments_markup();
+                let arguments_open = attr.arugments_open();
+                let arguments_close = attr.arugments_close();
+                format!(
+                    r#"
+                        <span class="attributes">
+                            {}
+                            {}
+                            {}
+                            {}
+                        </span>
+                    "#,
+                    attr_name_markup,
+                    arguments_open,
+                    arguments_markup.join(r#"<span>,</span>"#),
+                    arguments_close
+                )
+            })
+            .collect::<Vec<String>>()
     }
 }

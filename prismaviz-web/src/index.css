@@ -45,8 +45,8 @@ body {
   color: var(--mantine-color-blue-2);
   font-style: normal;
 }
-.argument-relational-fields,
-.argument-relational-references {
+
+.argument-name-is-relational {
   font-style: italic;
   color: var(--mantine-color-orange-4);
   display: flex;
@@ -56,15 +56,21 @@ body {
   margin-left: 0.5rem;
 }
 .model-name,
-.field-type {
+.field-type,
+.argument-type {
   color: var(--mantine-color-blue-2);
   font-style: italic;
 }
+
 .relational-field-type {
   color: var(--mantine-color-indigo-4);
   font-weight: 700;
   font-style: italic;
   text-transform: capitalize;
+}
+.argument-type-is-relational {
+  color: var(--mantine-color-grape-4);
+  font-style: italic;
 }
 
 .open-curly,
@@ -73,8 +79,9 @@ body {
   color: var(--mantine-color-white);
 }
 .fields-wrapper {
-  display: grid;
+  display: flex;
   margin-left: 1rem;
+  gap: 0.75rem;
 }
 .field-wrapper {
   display: flex;
@@ -87,4 +94,24 @@ body {
 .separator {
   margin-left: 0.25rem;
   margin-right: 0.25rem;
+}
+
+.fields-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  margin-left: 1rem;
+  row-gap: 2px;
+  column-gap: 2rem;
+}
+.field-type {
+  display: flex;
+}
+.field-attributes-container {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.arguments-container {
+  display: flex;
+  gap: 0.5rem;
 }

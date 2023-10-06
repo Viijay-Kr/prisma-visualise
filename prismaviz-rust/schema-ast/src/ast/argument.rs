@@ -10,7 +10,8 @@ pub struct ArgumentsList {
     /// @@index([a, b, c], map: "myidix")
     ///         ^^^^^^^^^^^^^^^^^^^^^^^^
     /// ```
-    pub arguments: Vec<Argument>,
+    pub  
+    arguments: Vec<Argument>,
     /// The arguments without a value:
     ///
     /// ```ignore

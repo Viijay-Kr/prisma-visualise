@@ -1,6 +1,6 @@
-mod attributes;
+pub mod attributes;
 mod constraints;
-mod field_type;
+pub mod field_type;
 mod relations;
 
 pub use crate::{attributes::ModelAttributes, constraints::Contraints, relations::RelationShips};
