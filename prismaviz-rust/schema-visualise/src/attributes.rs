@@ -1,3 +1,4 @@
+use core::fmt;
 use std::{
     fmt::{format, Arguments},
     mem::ManuallyDrop,
@@ -98,13 +99,25 @@ impl ModelAttributes {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum ArgumentValueKind {
     Array,
     Function,
     Number,
     StringLiteral,
     ConstantValue,
+}
+
+impl fmt::Display for ArgumentValueKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArgumentValueKind::Array => write!(f, "Array"),
+            ArgumentValueKind::Function => write!(f, "Function"),
+            ArgumentValueKind::Number => write!(f, "Number"),
+            ArgumentValueKind::StringLiteral => write!(f, "StringLiteral"),
+            ArgumentValueKind::ConstantValue => write!(f, "ConstantValue"),
+        }
+    }
 }
 
 trait ArgumentMarkup {}
@@ -144,10 +157,10 @@ impl CombinedArgument {
                 r#"
                         <span class="arguments-container">
                             {}          
-                            <span class="argument-type">{}</span>
+                            <span class="argument-type {}">{}</span>
                         </span>
                 "#,
-                name_markup, self.value
+                name_markup, self.kind, self.value
             )
         }
     }
@@ -176,13 +189,15 @@ pub struct PslAttribute {
     pub name: String,
     pub arguments: Vec<PslArgument>,
     pub is_relation: bool,
+    pub is_block: bool,
 }
 impl PslAttribute {
-    pub fn new(name: String, is_relation: bool) -> PslAttribute {
+    pub fn new(name: String, is_relation: bool, is_block: bool) -> PslAttribute {
         PslAttribute {
             name,
             arguments: vec![],
             is_relation,
+            is_block,
         }
     }
     pub fn resolve_arguments(&mut self, args: ArgumentsList) {
@@ -252,5 +267,26 @@ impl PslAttribute {
         } else {
             format!("")
         }
+    }
+
+    pub fn attribute_markup(&self) -> String {
+        let attr_name_markup = self.attribute_name_markup();
+        let arguments_markup = self.arguments_markup();
+        let arguments_open = self.arugments_open();
+        let arguments_close = self.arugments_close();
+        format!(
+            r#"
+                <span class="attributes">
+                    {}
+                    {}
+                    {}
+                    {}
+                </span>
+            "#,
+            attr_name_markup,
+            arguments_open,
+            arguments_markup.join(r#"<span>,</span>"#),
+            arguments_close
+        )
     }
 }

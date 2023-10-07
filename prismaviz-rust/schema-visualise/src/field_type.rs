@@ -139,7 +139,7 @@ impl PslField {
                     .clone()
                     .into_iter()
                     .for_each(|attr| {
-                        let mut attribute = PslAttribute::new(attr.name.name, false);
+                        let mut attribute = PslAttribute::new(attr.name.name, false, false);
                         attribute.resolve_arguments(attr.arguments);
                         self.attributes.push(attribute)
                     })
@@ -152,7 +152,7 @@ impl PslField {
                     .clone()
                     .into_iter()
                     .for_each(|attr| {
-                        let mut attribute = PslAttribute::new(attr.name.name, true);
+                        let mut attribute = PslAttribute::new(attr.name.name, true, false);
                         attribute.resolve_arguments(attr.arguments);
                         self.attributes.push(attribute)
                     })
@@ -180,26 +180,7 @@ impl PslField {
     pub fn resolve_attributes_markup(&self) -> Vec<String> {
         self.attributes
             .iter()
-            .map(|attr| {
-                let attr_name_markup = attr.attribute_name_markup();
-                let arguments_markup = attr.arguments_markup();
-                let arguments_open = attr.arugments_open();
-                let arguments_close = attr.arugments_close();
-                format!(
-                    r#"
-                        <span class="attributes">
-                            {}
-                            {}
-                            {}
-                            {}
-                        </span>
-                    "#,
-                    attr_name_markup,
-                    arguments_open,
-                    arguments_markup.join(r#"<span>,</span>"#),
-                    arguments_close
-                )
-            })
+            .map(|attr| attr.attribute_markup())
             .collect::<Vec<String>>()
     }
 }

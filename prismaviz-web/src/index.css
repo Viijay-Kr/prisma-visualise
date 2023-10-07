@@ -68,7 +68,8 @@ body {
   font-style: italic;
   text-transform: capitalize;
 }
-.argument-type-is-relational {
+.argument-type-is-relational,
+.Array {
   color: var(--mantine-color-grape-4);
   font-style: italic;
 }
@@ -105,6 +106,7 @@ body {
 }
 .field-type {
   display: flex;
+  text-transform: capitalize;
 }
 .field-attributes-container {
   display: flex;
@@ -114,4 +116,11 @@ body {
 .arguments-container {
   display: flex;
   gap: 0.5rem;
+}
+.model-attributes {
+  margin-top: 1rem;
+  margin-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }

@@ -12,6 +12,8 @@ model Post {
     id         Int                 @id @default(autoincrement())
     title      String?
     categories CategoriesOnPosts[]
+
+    @@index(fields: [title(length: 10, sort: Asc)])
 }
 
 model Category {
@@ -29,7 +31,7 @@ model CategoriesOnPosts {
     assignedBy String
 
     @@id([postId, categoryId])
-    @@index([postId])
+    @@index(fields: [postId, categoryId])
     @@index([categoryId])
 }
 

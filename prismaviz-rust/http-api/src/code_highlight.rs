@@ -1,4 +1,7 @@
-use prismaviz::{attributes::PslArgument, field_type::PslField};
+use prismaviz::{
+    attributes::{PslArgument, PslAttribute},
+    field_type::PslField,
+};
 use psl_core::{diagnostics::Diagnostics, parser_database::ParserDatabase};
 use rocket::serde::{json::Json, Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
@@ -79,6 +82,18 @@ pub fn code_highlight(input: Json<CodeHighlightInput>) -> Option<Json<CodeHighli
             ));
         }
         // End of fields wrapper
+        let model_attributes_markup = model
+            .ast_model()
+            .attributes
+            .iter()
+            .map(|attr| {
+                let mut attribute =
+                    PslAttribute::new("@".to_string() + &attr.name.name.clone(), false, true);
+                attribute.resolve_arguments(attr.arguments.clone());
+                attribute.attribute_markup()
+            })
+            .collect::<Vec<String>>();
+
         html_layout.span = WeakSpan {
             start: model.ast_model().span.start,
             end: model.ast_model().span.end,
@@ -90,13 +105,17 @@ pub fn code_highlight(input: Json<CodeHighlightInput>) -> Option<Json<CodeHighli
                 <div class="fields-container">
                     {}
                 </div>
+                <div class="model-attributes">
+                    {}
+                </div>
                 <div> 
                     <span class="close-curly">}}</span>
                 </div>
             </div>
         "#,
             model_open,
-            fields_markup.join("\n")
+            fields_markup.join("\n"),
+            model_attributes_markup.join("\n")
         );
         code.push(html_layout);
     }
