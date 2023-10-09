@@ -1,0 +1,5 @@
+{
+    "PORT": 8000,
+    "IMAGE_NAME": "prisma-inspector",
+    "CONTAINER_NAME": "prisma-inspector-tandrum"
+}

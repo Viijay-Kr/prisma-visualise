@@ -1,0 +1,6 @@
+#!/bin/sh
+# docker system prune --all --force
+docker build -t prisma-inspector .
+docker stop prisma-inspector-tandrum
+docker rm -f prisma-inspector-tandrum
+docker run --name prisma-inspector-tandrum -d -p 8000:8000 prisma-inspector 
