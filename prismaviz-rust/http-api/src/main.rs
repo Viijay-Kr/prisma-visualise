@@ -3,7 +3,7 @@ mod visualise;
 
 #[macro_use]
 extern crate rocket;
-use dotenv::dotenv;
+// use dotenv::dotenv;
 use rocket::config::Config;
 use rocket::fs::NamedFile;
 use rocket::http::Method;
@@ -39,7 +39,7 @@ fn bad_request(req: &Request) {
 
 #[launch]
 fn rocket() -> _ {
-    dotenv().ok();
+    // dotenv().ok();
     let allowed_origins = AllowedOrigins::all();
     let cors = rocket_cors::CorsOptions {
         allowed_origins,

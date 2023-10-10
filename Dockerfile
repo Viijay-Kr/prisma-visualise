@@ -28,6 +28,7 @@ COPY ./prismaviz-rust .
 
 ENV RUSTFLAGS='-C linker=x86_64-linux-gnu-gcc'
 
+
 RUN cargo build --package prismaviz-api --target x86_64-unknown-linux-musl --release
 
 ###### Build Web front end
@@ -37,7 +38,7 @@ FROM node:latest as vitebuilder
 WORKDIR /app
 
 COPY ./prismaviz-web .
-
+ENV VITE_PRISMA_API_URL=""
 RUN npm instal
 RUN npm run build
 
@@ -54,7 +55,7 @@ WORKDIR /app
 
 # Copy our build
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/prismaviz-api ./
-COPY --from=builder /app/.env ./
+# COPY --from=builder /app/.env ./
 
 COPY --from=vitebuilder /app/dist ./dist
 
@@ -62,4 +63,5 @@ COPY --from=vitebuilder /app/dist ./dist
 # USER app:app
 
 # RUN chmod=a=rwx -r files* /tmp
+ENV ROCKET_ASSETS_DIR="./dist"
 CMD ["/app/prismaviz-api"]
