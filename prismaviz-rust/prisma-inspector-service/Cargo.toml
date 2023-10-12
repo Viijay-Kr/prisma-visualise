@@ -13,6 +13,9 @@ uuid = { version = "1.4.1", features = [
 ] }
 dotenv = { version = "0.15.0" }
 rocket = { version = "=0.5.0-rc.3", features = ["json"] }
+shuttle-rocket = "0.29.0"
+shuttle-runtime = "0.29.0"
+tokio = "1.26"
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
 prismaviz = { path = "../schema-visualise", version = "0.1.0" }
 psl-core = { path = "../psl-core", version = "*" }

@@ -5,7 +5,8 @@ mod visualise;
 extern crate rocket;
 // use dotenv::dotenv;
 use rocket::config::Config;
-use rocket::fs::NamedFile;
+use rocket::fs::{relative, NamedFile};
+
 use rocket::http::Method;
 use rocket::Request;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
@@ -14,10 +15,7 @@ use std::path::{Path, PathBuf};
 
 #[get("/")]
 async fn index() -> Option<NamedFile> {
-    let static_path = std::env::var("ROCKET_ASSETS_DIR").unwrap_or("default_value".to_string());
-    println!("static_path {}", static_path);
-    let page_directory_path = format!("{}", static_path);
-    println!("page_directory_path {}", page_directory_path);
+    let page_directory_path = relative!("../prisma-inspector-web/dist");
     NamedFile::open(Path::new(&page_directory_path).join("index.html"))
         .await
         .ok()
@@ -25,8 +23,7 @@ async fn index() -> Option<NamedFile> {
 
 #[get("/<file..>")]
 async fn files(file: PathBuf) -> Option<NamedFile> {
-    let static_path = std::env::var("ROCKET_ASSETS_DIR").unwrap_or("default_value".to_string());
-    let page_directory_path = format!("{}", static_path);
+    let page_directory_path = relative!("../prisma-inspector-web/dist");
     NamedFile::open(Path::new(&page_directory_path).join(file))
         .await
         .ok()
@@ -37,8 +34,8 @@ fn bad_request(req: &Request) {
     format!("Something wrong with the request {}", req.uri());
 }
 
-#[launch]
-fn rocket() -> _ {
+#[shuttle_runtime::main]
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
     // dotenv().ok();
     let allowed_origins = AllowedOrigins::all();
     let cors = rocket_cors::CorsOptions {
@@ -56,7 +53,7 @@ fn rocket() -> _ {
     let mut config = Config::release_default();
     let ip = Ipv4Addr::new(0, 0, 0, 0);
     config.address = IpAddr::V4(ip);
-    rocket::custom(config)
+    let rocket = rocket::custom(config)
         .mount(
             "/",
             routes![
@@ -67,5 +64,7 @@ fn rocket() -> _ {
             ],
         )
         .register("/api/v1/visualise", catchers![bad_request])
-        .attach(cors)
+        .attach(cors);
+
+    Ok(rocket.into())
 }
