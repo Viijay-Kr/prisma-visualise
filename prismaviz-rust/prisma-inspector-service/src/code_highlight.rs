@@ -1,7 +1,4 @@
-use prismaviz::{
-    attributes::{PslArgument, PslAttribute},
-    field_type::PslField,
-};
+use prismaviz::{attributes::PslAttribute, field_type::PslField};
 use psl_core::{diagnostics::Diagnostics, parser_database::ParserDatabase};
 use rocket::serde::{json::Json, Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
@@ -12,7 +9,7 @@ pub struct WeakSpan {
 }
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub(crate) struct CodeHighlightInput {
+pub struct CodeHighlightInput {
     span: WeakSpan,
     schema: String,
 }

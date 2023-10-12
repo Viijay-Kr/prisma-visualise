@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::code_highlight;
 #[derive(Debug, FromForm)]
-pub(crate) struct VisualiseInput<'r> {
+pub struct VisualiseInput<'r> {
     schema: TempFile<'r>,
 }
 
@@ -32,7 +32,7 @@ struct Model {
 }
 #[derive(Serialize)]
 #[serde(crate = "rocket::serde")]
-pub(crate) struct VisualiseOutput {
+pub struct VisualiseOutput {
     result: Vec<Model>,
     schema: String,
 }
