@@ -10,7 +10,7 @@ import { DisplaySchema } from "./components/DisplaySchema/DisplaySchema";
 const queryClient = new QueryClient();
 
 const theme = createTheme({
-  fontFamily: "Space Mono, monospace",
+  fontFamily: "Source Code Pro, monospace",
 });
 function App() {
   return (

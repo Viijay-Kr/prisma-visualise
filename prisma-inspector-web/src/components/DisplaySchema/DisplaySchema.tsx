@@ -164,6 +164,7 @@ const Model = ({
     <Flex
       style={{
         fontSize: "16px",
+        fontFamily: "Space mono, monospace",
         color: "#845EF7",
         borderRadius: 0,
       }}
